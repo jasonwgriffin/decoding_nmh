@@ -23,3 +23,10 @@
  13. R/src/process_output.R - This is source code for reading in the MVPA output
  14. R/src/CNR_analysis.R - This is source code for conducting sensitivity analyses, including the derivation of the Contrast-to-noise (CNR) ratio scores. This also produces Extended Data Table 1.
 
+
+## How to use
+
+The matlab files in the MVPA directory will run the decoding/MVPA analyses. The primary input data for this is acquired from NDAR (Collection ID #2288). This code will derive and save output that will be the input data for the top level R Markdown file `decoding_analysis.Rmd`. `decoding_analysis.Rmd.` will generate all of the figures and tables of the paper, which contain the primary results. 
+
+## Questions about the code?
+You can contact jasongriffin@uh.edu for any questions
