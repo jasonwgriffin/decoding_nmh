@@ -21,5 +21,5 @@
  11. R/src/make_table1.R - This is source code to generate Table 1.
  12. R/src/make_table2.R - This is source code to generate Table 2.
  13. R/src/process_output.R - This is source code for reading in the MVPA output
- 14. R/src/CNR_analysis.R - This is source code for conducting sensitivity analyses, including the derivation of the Contrast-to-noise (CNR) ratio scores
+ 14. R/src/CNR_analysis.R - This is source code for conducting sensitivity analyses, including the derivation of the Contrast-to-noise (CNR) ratio scores. This also produces Extended Data Table 1.
 
