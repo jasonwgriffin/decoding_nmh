@@ -1,0 +1,98 @@
+---
+title: "Title: Decoding the temporal dynamics of face-specific neural representations in autism"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(pacman)
+p_load(readr,tibble,dplyr,stringr,ggplot2,purrr,cowplot,ggsci, ggforce, ggrepel,reshape2,RColorBrewer,lme4,lmerTest, cropcircles,R.matlab,tidyr, ggstance,emmeans, ggpubr)
+setwd("") # enter directory
+fig_path <- "" # enter figure output file
+```
+
+```{r}
+# process data from mvpc output
+source("src/load_demo.R")
+d <- phenotype
+
+run_label <- list.files("../1. MVPA/T1")[3]
+source("src/process_output.R")
+d_t1 <- process_output(timepoint="T1", run_label = run_label)
+
+t1_ids <- unique(c(d_t1$faces_houses$id))
+
+table(d_t1$faces_houses_metrics$metric, d_t1$faces_houses_metrics$group)
+table(d_t1$upright_inverted_metrics$metric, d_t1$upright_inverted_metrics$group)
+table(d_t1$face_identity_metrics$metric, d_t1$face_identity_metrics$group)
+table(d_t1$all_images_metrics$metric, d_t1$all_images_metrics$group)
+
+best_cat_files <- tibble(id = list.files('/Users/jasongriffin/Dropbox/UH/_Research/Publications/Decoding/decoding_analysis/1. MVPA/T1/best_files/category_bins')) %>%
+  mutate(id = str_replace(id,"97.4504_ 20180316_fPrepped_FilArt.best","97.4504")) %>% 
+  mutate(id = str_replace(id,"38.0106_ 20171211_fPrepped_FilArt.best", "38.0106")) %>% 
+  mutate(id = str_remove(id,"_[0-9]{8}_fPrepped_FilArt.*$")) %>% 
+  mutate(id = str_remove(id, "^.")) %>% 
+  mutate(id = str_replace(id, "(^..)(.)", "\\1.")) %>% 
+  pull(1)
+best_image_files <- tibble(id = list.files('/Users/jasongriffin/Dropbox/UH/_Research/Publications/Decoding/decoding_analysis/1. MVPA/T1/best_files/image_bins')) %>%
+  mutate(id = str_remove(id, ".best")) %>% 
+  pull(1)
+
+df_cat_valid <- d %>% select(id, visit_participant_group) %>% filter( id %in% best_cat_files)  
+table(df_cat_valid$visit_participant_group)
+df_image_valid <- d %>% select(id, visit_participant_group) %>% filter( id %in% best_image_files)  
+table(df_image_valid$visit_participant_group)
+```
+
+# Table Creation
+```{r}
+source("src/make_table1.R")
+make_table1(fig_path,d)
+
+source("src/make_table2.R")
+make_table2(fig_path, d_t1, iq_control ="no")
+make_table2(fig_path, d_t1, iq_control ="yes")
+```
+
+# Section 1: Figure Creation
+
+```{r}
+source("src/ED Figure 2.R")
+make_figure3(fig_path,7,7,run_label)
+
+source("src/Figure 1.R")
+make_figure3(fig_path,7,7,run_label)
+
+source("src/Figure 2.R")
+make_figure4(fig_path)
+
+source("src/Figure 3.R")
+make_figure5(fig_path)
+
+source("src/Figure 4.R")
+make_figure6(fig_path,6,9,run_label)
+```
+
+
+# Decoding Metrics
+```{r}
+clin_vars <- c("diagnosis_summary_full_scale_best_iq.t1", "imported_srs_t_score.t1", "visit_ados2_comparison_score_ss.t1", "imported_vineland_2_vi3_soc_ss.t1", "imported_vineland_2_vi3_com_ss.t1", "@vineland_2_vi3_2scale_ss.t1")
+
+fh_df <- tidyr::pivot_wider(d_t1$faces_houses_metrics,names_from = metric,values_from = value) %>% 
+  mutate(decoding_sus = tidyr::replace_na(decoding_sus,0)) %>% 
+  left_join(phenotype %>% select(id,clin_vars), by = "id") %>% 
+  rename(iq = diagnosis_summary_full_scale_best_iq.t1)
+ui_df <- tidyr::pivot_wider(d_t1$upright_inverted_metrics,names_from = metric,values_from = value) %>% 
+  mutate(decoding_sus = tidyr::replace_na(decoding_sus,0)) %>% 
+  left_join(phenotype %>% select(id,clin_vars), by = "id") %>% 
+  rename(iq = diagnosis_summary_full_scale_best_iq.t1)
+fi_df <- tidyr::pivot_wider(d_t1$face_identity_metrics,names_from = metric,values_from = value) %>% 
+  mutate(decoding_sus = tidyr::replace_na(decoding_sus,0)) %>% 
+  left_join(phenotype %>% select(id,clin_vars), by = "id") %>% 
+  rename(iq = diagnosis_summary_full_scale_best_iq.t1)
+ai_df <- tidyr::pivot_wider(d_t1$all_images_metrics,names_from = metric,values_from = value) %>% 
+  mutate(decoding_sus = tidyr::replace_na(decoding_sus,0)) %>% 
+  left_join(phenotype %>% select(id,clin_vars), by = "id") %>% 
+  rename(iq = diagnosis_summary_full_scale_best_iq.t1)
+```
